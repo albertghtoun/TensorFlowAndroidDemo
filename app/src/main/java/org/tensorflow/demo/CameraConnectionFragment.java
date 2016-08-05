@@ -16,6 +16,7 @@
 
 package org.tensorflow.demo;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -23,6 +24,7 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
@@ -41,6 +43,8 @@ import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
@@ -365,6 +369,7 @@ public class CameraConnectionFragment extends Fragment {
     }
   }
 
+  private int MY_PERMISSION_CAMERA;
   /**
    * Opens the camera specified by {@link CameraConnectionFragment#cameraId}.
    */
@@ -377,6 +382,15 @@ public class CameraConnectionFragment extends Fragment {
       if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
         throw new RuntimeException("Time out waiting to lock camera opening.");
       }
+
+      int permissionCheck = ContextCompat.checkSelfPermission(activity,
+              Manifest.permission.CAMERA);
+      if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+        ActivityCompat.requestPermissions(activity,
+                new String[]{Manifest.permission.CAMERA},
+                MY_PERMISSION_CAMERA);
+      }
+      // Assume thisActivity is the current activity
       manager.openCamera(cameraId, stateCallback, backgroundHandler);
     } catch (final CameraAccessException e) {
       LOGGER.e(e, "Exception!");
